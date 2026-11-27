@@ -1,7 +1,9 @@
-import { API_BASE } from './server-config.js';
+import * as config from './server-config.js';
 import { apiFetch as localFetch } from './static-api.js';
 
-export const isShared = Boolean(API_BASE);
+const { API_BASE } = config;
+export const isDeploymentPreview = config.PARTICIPANT_PREVIEW === true;
+export const isShared = Boolean(API_BASE) && !isDeploymentPreview;
 const scope = `hc-pages-${new URL('../', import.meta.url).pathname}`;
 const tokenKey = `${scope}-participant-token`;
 let generation = null, cardId = '', cache = null, sequence = 0, applied = 0;

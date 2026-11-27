@@ -1,4 +1,4 @@
-import { apiFetch, isShared } from './api-client.js';
+import * as islandApi from './api-client.js';
 import { subscribeLive, liveConnected } from './live-client.js';
 import { MATES, DEMOS } from './data.js';
 import { UI, FIELDS, REACTIONS } from './ui-config.js';
@@ -6,6 +6,7 @@ import { MATE_ASSETS } from './mate-assets.js';
 import { makeWalker, stepWorld } from './island-motion.js';
 import { createProfileImage } from './profile-image.js';
 
+const { apiFetch, isDeploymentPreview, isShared } = islandApi;
 const $ = id => document.getElementById(id);
 const el = (tag, cls, value) => { const node = document.createElement(tag); if (cls) node.className = cls; if (value !== undefined) node.textContent = value; return node; };
 const SCOPE = `hc-pages-${new URL('../', import.meta.url).pathname}`;
@@ -97,7 +98,9 @@ async function refresh() {
     if (data.mine && typeof data.mine.dopamine === 'string') { state.mine = data.mine; keep(OWN, data.mine); }
     else if (!state.mine?.localOnly) { state.mine = null; keep(OWN, null); }
     if (isShared && state.current && !state.current.localOnly && !data.cards.some(c => c.id === state.current.id)) { closeProfile(); state.current = null; toast('삭제된 카드입니다.'); }
-    notice(isShared ? '' : '기기별 테스트 · 다른 기기와 카드·반응은 공유되지 않습니다.'); const key = JSON.stringify([state.cards, state.mine]); if (refresh.key !== key) { refresh.key = key; renderGallery(); }
+    if (isDeploymentPreview) notice('공유 기능 준비 중 · 이 기기에서만 테스트할 수 있습니다.');
+    else notice(isShared ? '' : '기기별 테스트 · 다른 기기와 카드·반응은 공유되지 않습니다.');
+    const key = JSON.stringify([state.cards, state.mine]); if (refresh.key !== key) { refresh.key = key; renderGallery(); }
   } catch { notice('연결을 확인하지 못했습니다.'); }
 }
 

@@ -4,6 +4,13 @@ export { IslandLive } from './live.mjs';
 export default {
   async fetch(request, env, context) {
     const url = new URL(request.url);
+    const participantPreview = env.HC_DEPLOYMENT_CHECK === 'true';
+    if (participantPreview && ['/api/cards', '/api/reactions', '/api/live'].includes(url.pathname)) {
+      return Response.json({ error: '행사용 공유 기능을 준비하고 있습니다.' }, {
+        status: 503,
+        headers: { 'Cache-Control': 'no-store' },
+      });
+    }
     const live = env.ISLAND_LIVE?.get(env.ISLAND_LIVE.idFromName('hope-creator'));
     if (url.pathname === '/api/live') {
       const allowed = new Set([url.origin, ...(env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean)]);
@@ -15,7 +22,7 @@ export default {
       waitUntil: promise => context.waitUntil(promise),
       publish: event => live ? live.fetch('https://live.internal/publish', { method: 'POST', body: JSON.stringify(event) }).then(response => { if (!response.ok) throw Error('Live delivery failed'); }) : Promise.resolve(),
     });
-    if (url.pathname === '/studio/server-config.js') return new Response(`export const API_BASE = ${JSON.stringify(url.origin)};\nexport const LIVE_UPDATES = ${!!live};\n`, { headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
+    if (url.pathname === '/studio/server-config.js') return new Response(`export const API_BASE = ${JSON.stringify(url.origin)};\nexport const LIVE_UPDATES = ${!!live && !participantPreview};\nexport const PARTICIPANT_PREVIEW = ${participantPreview};\n`, { headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
     if (url.pathname === '/admin') return Response.redirect(`${url.origin}/admin/`, 302);
     const response = await env.ASSETS.fetch(request);
     const headers = new Headers(response.headers);
