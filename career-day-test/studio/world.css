@@ -1,6 +1,6 @@
 /* A roomy map for fifty people. The map pans instead of shrinking on phones. */
 #hc-root .world{overflow:auto;touch-action:pan-x pan-y pinch-zoom;scroll-behavior:auto;scrollbar-width:none;background:#8ed9e4}
-#hc-root .island-stage{width:max(100%,var(--world-width,1600px));height:max(100dvh,var(--world-height,1040px));min-width:1600px;min-height:1040px;isolation:isolate}
+#hc-root .island-stage{width:max(100%,var(--world-width,1600px));height:max(100dvh,var(--world-height,1040px),52vw);min-width:1600px;min-height:1040px;isolation:isolate}
 #hc-root .island-landscape{object-fit:fill;pointer-events:none;user-select:none;-webkit-user-drag:none}
 #hc-root .avatars{touch-action:pan-x pan-y pinch-zoom}
 #hc-root .avatar-button{width:72px;height:96px;min-width:72px;min-height:96px;max-width:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible;animation:none;touch-action:manipulation;will-change:transform}

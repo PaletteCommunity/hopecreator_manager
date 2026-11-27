@@ -1,0 +1,198 @@
+/* Compact layout for the introduction editor. The drawing dialog has its own layout. */
+#hc-root #editor .dialog-header {
+  padding: 6px 16px 2px;
+}
+
+#hc-root #editor .close-editor {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  line-height: 1;
+}
+
+#hc-root #editor #profile-form {
+  margin: 4px 16px 12px;
+  padding: 10px;
+}
+
+#hc-root #editor .resume-top {
+  grid-template-columns: clamp(126px, 26vw, 176px) minmax(0, 1fr);
+  gap: 10px;
+}
+
+#hc-root #editor .resume-photo {
+  display: grid;
+  place-items: center;
+  min-height: 148px;
+  padding: 8px 6px 22px;
+}
+
+#hc-root #editor #preview-art {
+  min-height: 0;
+}
+
+#hc-root #editor #preview-art .mate-portrait {
+  width: min(100%, 140px);
+  height: 124px;
+  max-width: none;
+}
+
+#hc-root #editor #preview-art .preview-silhouette {
+  filter: brightness(0);
+  opacity: .22;
+}
+
+#hc-root #editor .photo-lock,
+#hc-root #editor .photo-edit {
+  position: absolute;
+  bottom: 5px;
+  pointer-events: none;
+}
+
+#hc-root #editor .photo-lock {
+  inset: auto auto 5px 7px;
+  background: transparent;
+  color: #8b6b56;
+}
+
+#hc-root #editor .photo-lock[hidden] {
+  display: none;
+}
+
+#hc-root #editor .photo-edit {
+  right: 7px;
+  color: #b85728;
+}
+
+#hc-root #editor .photo-lock svg,
+#hc-root #editor .photo-edit svg {
+  width: 19px;
+  height: 19px;
+}
+
+#hc-root #editor .resume-row {
+  grid-template-columns: 112px minmax(0, 1fr);
+  min-height: 42px;
+}
+
+#hc-root #editor .resume-row > span,
+#hc-root #editor .resume-row input {
+  padding: 4px 8px;
+}
+
+#hc-root #editor .resume-row input {
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+#hc-root #editor .resume-section {
+  margin-top: 8px;
+}
+
+#hc-root #editor .resume-row > span,
+#hc-root #editor .resume-dopamine > label,
+#hc-root #editor .resume-section h3,
+#hc-root #editor .resume-mate-row > span,
+#hc-root #editor .resume-prompt,
+#hc-root #editor .mate-select-button {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 800;
+  font-variation-settings: 'DANC' 50;
+  line-height: 1.32;
+}
+
+#hc-root #editor .resume-dopamine > label,
+#hc-root #editor .resume-prompt {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 5px;
+  padding: 5px 8px 3px;
+}
+
+#hc-root #editor .resume-section h3 {
+  padding: 5px 8px;
+}
+
+#hc-root #editor .resume-prompt .prompt-copy {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+#hc-root #editor .field-count,
+#hc-root #editor .prompt-subtext {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+#hc-root #editor .prompt-subtext {
+  margin-top: 2px;
+}
+
+#hc-root #editor .resume-mate-row {
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 8px;
+}
+
+#hc-root #editor .mate-select-button {
+  min-width: 0;
+  max-width: 65%;
+  min-height: 44px;
+  padding: 3px 9px;
+  font-size: 15px;
+}
+
+#hc-root #editor textarea {
+  min-height: 54px;
+  padding: 5px 8px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+#hc-root #editor .form-end {
+  margin-top: 8px;
+}
+
+#hc-root #editor .form-end .button {
+  min-height: 44px;
+  padding-block: 8px;
+  line-height: 1.35;
+}
+
+@media (max-width: 520px) {
+  #hc-root #editor .dialog-header {
+    padding-inline: 10px;
+  }
+
+  #hc-root #editor #profile-form {
+    margin-inline: 8px;
+    padding: 8px;
+  }
+
+  #hc-root #editor .resume-top {
+    grid-template-columns: clamp(104px, 32vw, 152px) minmax(0, 1fr);
+    gap: 7px;
+  }
+
+  #hc-root #editor .resume-row {
+    grid-template-columns: 74px minmax(0, 1fr);
+  }
+
+  #hc-root #editor .resume-row > span,
+  #hc-root #editor .resume-dopamine > label {
+    padding-inline: 5px;
+    font-size: 15px;
+  }
+
+  #hc-root #editor #preview-art .mate-portrait {
+    height: 110px;
+  }
+}

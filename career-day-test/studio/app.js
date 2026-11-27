@@ -104,7 +104,14 @@ async function refresh() {
 function currentDraft() { const d = { mateId: state.mateId, aspirationMateId: state.aspirationMateId, strokes: state.strokes }; for (const field of FIELDS) d[field.key] = $(field.id).value.trim(); return d; }
 function isComplete() { return FIELDS.every(f => !f.required || $(f.id).value.trim()) && !!mate(state.mateId) && !!mate(state.aspirationMateId); }
 function updateForm() {
-  const complete = isComplete(); $('photo-lock').hidden = complete; $('character-preview').classList.toggle('locked', !complete); $('character-preview').setAttribute('aria-label', complete ? '내 캐릭터 그리기' : '모든 칸 작성 후 캐릭터 그리기'); $('preview-art').replaceChildren(portrait({ mateId: state.mateId, strokes: state.strokes }));
+  const complete = isComplete();
+  $('photo-lock').hidden = complete;
+  $('character-preview').classList.toggle('locked', !complete);
+  $('character-preview').setAttribute('aria-label', complete ? '내 캐릭터 그리기' : '모든 칸 작성 후 캐릭터 그리기');
+
+  const preview = portrait({ mateId: state.mateId || 'flame', strokes: state.strokes });
+  preview.classList.toggle('preview-silhouette', state.strokes.length === 0);
+  $('preview-art').replaceChildren(preview);
   $('choose-mate').textContent = mate(state.mateId) ? `${mate(state.mateId).name} · ${mate(state.mateId).value}` : '선택'; $('choose-aspiration').textContent = mate(state.aspirationMateId) ? `${mate(state.aspirationMateId).name} · ${mate(state.aspirationMateId).value}` : '선택';
   for (const field of FIELDS) { const counter = document.querySelector(`[data-count-for="${field.id}"]`); if (counter) counter.textContent = `${Array.from($(field.id).value).length}/${field.max}`; }
   keep(KEY, currentDraft());
