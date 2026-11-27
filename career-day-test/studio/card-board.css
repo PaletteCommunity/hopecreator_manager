@@ -1,0 +1,84 @@
+#hc-root #card-board {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 44px;
+  gap: 8px;
+  padding-block: 71px max(82px, calc(env(safe-area-inset-bottom) + 72px));
+  background: radial-gradient(ellipse at 50% 42%, #fffdfa 12%, #fff4eb 88%);
+}
+
+#hc-root #card-grid {
+  --board-gutter: clamp(14px, 4vw, 76px);
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: clamp(240px, 26vw, 318px);
+  grid-template-rows: minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(12px, 2vw, 26px);
+  min-width: 0;
+  padding: 7px var(--board-gutter);
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+  scroll-padding-inline: var(--board-gutter);
+  scroll-snap-type: x mandatory;
+}
+
+#hc-root #card-grid::-webkit-scrollbar { display: none; }
+
+#hc-root #card-grid .mini-card {
+  width: 100%;
+  height: min(100%, 365px);
+  min-height: 0;
+  max-height: 100%;
+  padding: 14px 12px;
+  border-radius: 16px;
+  scroll-snap-align: start;
+}
+
+#hc-root #card-grid .mini-card > .mate-portrait {
+  width: min(100%, 205px);
+  height: min(64%, 205px);
+  max-height: 64%;
+  aspect-ratio: auto;
+}
+
+#hc-root #card-grid .mini-card:focus-visible {
+  outline-offset: -4px;
+}
+
+#hc-root #card-board .card-board-controls {
+  display: flex;
+  gap: 7px;
+  justify-content: center;
+}
+
+#hc-root #card-board .card-board-controls > button {
+  min-height: 44px;
+  min-width: 70px;
+  padding: 4px 12px;
+  border-radius: 10px;
+  line-height: 1.25;
+}
+
+#hc-root #card-board[hidden],
+#hc-root #card-board .card-board-controls[hidden] { display: none; }
+
+#hc-root #card-board:not([hidden]) ~ #empty-state:not([hidden]) {
+  position: absolute;
+  inset: 46% 16px auto;
+  text-align: center;
+}
+
+#hc-root #card-board:not([hidden]) ~ #connection-notice {
+  bottom: calc(max(82px, env(safe-area-inset-bottom) + 72px) + 49px);
+  pointer-events: none;
+}
+
+@media (max-width: 650px) {
+  #hc-root #card-grid { grid-auto-columns: min(75vw, 327px); }
+  #hc-root #card-grid .mini-card { height: min(100%, 350px); }
+}

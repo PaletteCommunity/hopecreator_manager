@@ -17,6 +17,39 @@
 #hc-root #profile-card .identity-copy h2{margin:0;color:#292a2d;font-family:var(--font-display);font-size:clamp(24px,7.1vw,30px);font-weight:800;font-variation-settings:'DANC' 50;line-height:1.22;letter-spacing:-.035em;white-space:normal;overflow-wrap:anywhere;word-break:keep-all}
 #hc-root #profile-card .identity-job{display:block;margin:8px 0 0;color:#82634f;font-family:var(--font-body);font-size:14px;font-weight:400;line-height:1.45;letter-spacing:-.015em;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
 #hc-root #profile-card .identity-job:empty{display:none}
+#hc-root #profile-card .card-identity>.mate-portrait,
+#hc-root #profile-card .card-identity>.mate-portrait.drawn {
+  flex-basis: min(var(--portrait-size), 24%);
+  width: min(var(--portrait-size), 24%);
+  height: auto;
+  aspect-ratio: 1;
+}
+#hc-root #profile-card .identity-dopamine {
+  flex: 0 0 clamp(83px, 31%, 132px);
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid #e9b291;
+  border-radius: 9px;
+  background: #fff8f1;
+  font-family: var(--font-body);
+  overflow-wrap: anywhere;
+}
+#hc-root #profile-card .identity-dopamine h3 {
+  margin: 0 0 3px;
+  color: #864c2d;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  word-break: keep-all;
+}
+#hc-root #profile-card .identity-dopamine p {
+  margin: 0;
+  color: #493226;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
 #hc-root #profile-card .card-body{display:flex;flex-direction:column;gap:var(--card-gap);margin:0;padding:var(--card-pad)}
 #hc-root #profile-card .story-block{position:relative;display:block;min-width:0;margin:0;padding:0;border:0;background:transparent}
 #hc-root #profile-card .story-block+.story-block{padding-top:var(--card-gap);border-top:1px solid #efe7de}
@@ -32,9 +65,6 @@
 #hc-root #profile-card .story-block.current .story-label{font-weight:700}
 #hc-root #profile-card .story-block.current .story-text{font-weight:500}
 #hc-root #profile-card .story-block.current+.story-block{padding-top:0;border-top:0}
-#hc-root #profile-card .story-block.dopamine .story-top{min-height:0;margin-bottom:5px}
-#hc-root #profile-card .story-block.dopamine .story-label{color:#79716a;font-weight:500}
-#hc-root #profile-card .story-block.dopamine .story-text{font-size:max(16px,calc(var(--card-font-size) - 2px));color:#66615d;font-weight:400}
 #hc-root #profile-card .story-block.concern .story-label{color:#68615c}
 #hc-root #profile-card .profile-sheet-footer{margin:0;padding:0 var(--card-pad) var(--card-pad);font-size:12px;line-height:1.4;color:#a38a78}
 #hc-root #profile-dialog>.reaction-buttons{position:relative;bottom:auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));flex:0 0 auto;gap:6px;min-height:44px;margin:9px 0 0;padding:0;background:transparent;z-index:25}
@@ -59,18 +89,80 @@
   #hc-root #profile-dialog[open]{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);padding:9px;border-radius:20px}
   #hc-root #profile-dialog>.profile-controls{margin-bottom:6px}
   #hc-root #profile-dialog.presenting[open]{width:100vw;max-width:none;height:100dvh;max-height:100dvh;margin:0;padding:max(6px,env(safe-area-inset-top)) 8px max(6px,env(safe-area-inset-bottom));border:0;border-radius:0;box-shadow:none}
-  #hc-root #profile-card .card-identity{gap:12px}
-  #hc-root #profile-card .identity-copy h2{font-size:27px}
+  #hc-root #profile-card .card-identity{gap:8px}
+  #hc-root #profile-card .identity-copy h2{font-size:clamp(22px,6vw,27px)}
+  #hc-root #profile-card .identity-dopamine{padding:6px}
   #hc-root #profile-card .identity-job{font-size:14px;margin-top:7px}
   #hc-root #profile-card .story-top{gap:5px 7px}
   #hc-root #profile-dialog>.profile-actions>.button{padding:8px 6px}
 }
 @media(max-width:340px){
-  #hc-root #profile-card .card-identity{gap:9px}
-  #hc-root #profile-card .identity-copy h2{font-size:24px}
+  #hc-root #profile-card .card-identity{gap:6px}
+  #hc-root #profile-card .identity-copy h2{font-size:22px}
   #hc-root #profile-card .story-top{align-items:flex-start;gap:5px}
   #hc-root #profile-card .mate-tag{font-size:12px}
   #hc-root #profile-dialog>.reaction-buttons{gap:4px}
   #hc-root #profile-dialog>.reaction-buttons>button{font-size:13px}
 }
 @media(prefers-reduced-motion:reduce){#hc-root #profile-dialog::backdrop{backdrop-filter:none}}
+#hc-root #image-save-dialog {
+  width: min(480px, calc(100% - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: hidden;
+}
+
+#hc-root #image-save-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+#hc-root #image-save-dialog .dialog-header {
+  flex: none;
+  padding: 8px 12px;
+}
+
+#hc-root #image-save-dialog .image-save-scroll {
+  min-height: 0;
+  overflow: auto;
+  padding-inline: 12px;
+  overscroll-behavior: contain;
+}
+
+#hc-root #image-save-preview {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+#hc-root #image-save-dialog .image-save-actions {
+  flex: none;
+  padding: 10px 12px max(12px, env(safe-area-inset-bottom));
+}
+
+#hc-root #image-save-dialog .image-save-actions p {
+  margin: 0 0 7px;
+  color: #5c5048;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+#hc-root #image-save-dialog .image-save-actions > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+#hc-root #image-save-dialog .image-save-actions .button {
+  display: inline-flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 10px;
+  text-decoration: none;
+}
+
+#hc-root #image-save-dialog .button[hidden],
+#hc-root #image-save-status:empty {
+  display: none;
+}
