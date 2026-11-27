@@ -1,0 +1,4 @@
+@font-face{font-family:HCDisplay;src:url('./assets/fonts/dancing-peoples.woff2') format('woff2');font-style:normal;font-weight:800;font-display:swap}
+:root{--font-display:HCDisplay,'Malgun Gothic',sans-serif;--font-body:'Apple SD Gothic Neo','Malgun Gothic',sans-serif}
+#hc-root .dialog-header h2,#hc-root .mini-card>strong,#hc-root .result-heading h2,#hc-root .avatar-name,#hc-root .my-card-dock .caption{font-weight:800;font-variation-settings:'DANC' 50}
+#hc-root .button,#hc-root .mate-select-button,#hc-root .mate-option strong,#hc-root .tool{font-family:var(--font-display);font-weight:800;font-variation-settings:'DANC' 50}

@@ -17,5 +17,9 @@ GitHub Pages용 정적 테스트본입니다.
 - 스타일: `career-day-test/studio/island.css`
 - 글자 수·움직임: `career-day-test/studio/ui-config.js`
 - 화면 동작: `career-day-test/studio/app.js`
+- 메이트 이미지와 표시 영역: `career-day-test/studio/mate-assets.js`
+- 폰트: `career-day-test/studio/fonts.css` (Hada Type 춤추는 사람들, SIL OFL 1.1 원문은 assets/fonts에 동봉)
+
+메이트 6종은 공식 투명 PNG 원본을 사용합니다. 원본을 찾지 못한 위즈·비니·미니·인투 4종은 제공된 자료를 바탕으로 투명 이미지로 재현한 테스트 자산입니다.
 
 현재 Pages는 main 브랜치의 루트에서 배포됩니다. 테스트 수정은 `career-day-test/` 폴더 안에서 진행하면 됩니다. 저장소 루트의 `index.html`은 기존 예산 관리 페이지입니다.

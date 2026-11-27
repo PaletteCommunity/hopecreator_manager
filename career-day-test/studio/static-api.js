@@ -1,6 +1,6 @@
 // GitHub Pages UI preview: device-local records, no participant data leaves this browser.
 const storageKey = `hc-pages-${new URL('../', import.meta.url).pathname}-card`;
-const limits = { name: 12, dopamine: 30, experience: 80, attempts: 40, concern: 60 };
+const limits = { name: 12, jobInterest: 30, dopamine: 30, experience: 80, attempts: 40, concern: 60 };
 const mates = new Set(['flame', 'wiz', 'vini', 'dutti', 'mini', 'inou', 'intoo', 'cloody', 'mmuni', 'inno']);
 function load() { try { return JSON.parse(localStorage.getItem(storageKey) || 'null'); } catch { return null; } }
 function json(value, status = 200) { return new Response(JSON.stringify(value), { status, headers: { 'Content-Type': 'application/json' } }); }
@@ -9,7 +9,7 @@ function parse(payload) {
   for (const [key, max] of Object.entries(limits)) {
     if (typeof payload[key] !== 'string') throw Error('입력 내용을 확인해 주세요.');
     const text = payload[key].normalize('NFC').trim();
-    if ((key !== 'attempts' && !text) || Array.from(text).length > max) throw Error('입력 글자 수를 확인해 주세요.'); card[key] = text;
+    if (!text || Array.from(text).length > max) throw Error('입력 글자 수를 확인해 주세요.'); card[key] = text;
   }
   if (!mates.has(payload.mateId) || !mates.has(payload.aspirationMateId)) throw Error('두 메이트를 선택해 주세요.');
   card.mateId = payload.mateId; card.aspirationMateId = payload.aspirationMateId;
