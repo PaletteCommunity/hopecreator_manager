@@ -1,6 +1,7 @@
 import { API_BASE } from './server-config.js';
 import { MATES } from './data.js';
 import { MATE_ASSETS } from './mate-assets.js';
+import { subscribeLive, liveConnected } from './live-client.js';
 
 const $ = id => document.getElementById(id);
 const el = (tag, cls, text) => { const node = document.createElement(tag); if (cls) node.className = cls; if (text !== undefined) node.textContent = text; return node; };
@@ -96,5 +97,6 @@ async function initialize() {
   catch (error) { message('login-error', error.message || '서버 연결을 확인해 주세요.'); }
 }
 initialize();
-setInterval(() => { if (!document.hidden && !document.querySelector('dialog[open]') && !busy) refresh(); }, 10000);
+if (API_BASE && new URL(API_BASE).origin === location.origin) subscribeLive(event => { if (event.kind !== 'reaction' && !document.querySelector('dialog[open]') && !busy) refresh(); });
+setInterval(() => { if (!liveConnected() && !document.hidden && !document.querySelector('dialog[open]') && !busy) refresh(); }, 30000);
 window.addEventListener('focus', () => { if (!document.querySelector('dialog[open]') && !busy) refresh(); });

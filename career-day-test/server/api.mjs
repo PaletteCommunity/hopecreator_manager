@@ -16,6 +16,11 @@ const first = (db, sql, ...args) => stmt(db, sql, ...args).first();
 const rows = async (db, sql, ...args) => (await stmt(db, sql, ...args).all()).results;
 const changes = result => Number(result.meta?.changes || 0);
 const publicCard = row => row ? { ...JSON.parse(row.data), id: row.id, createdAt: row.created_at, updatedAt: row.updated_at } : null;
+async function announce(context, event) {
+  if (!context.publish) return;
+  const task = context.publish(event).catch(() => console.error('Live notification delivery failed'));
+  if (context.waitUntil) context.waitUntil(task); else await task;
+}
 
 export async function makePasswordHash(password) {
   if (typeof password !== 'string' || password.length < 12 || password.length > 256) throw Error('관리자 비밀번호는 12~256자로 설정해 주세요.');
@@ -123,6 +128,7 @@ async function api(request, env, url, context) {
       const input = await body(request);
       const result = await stmt(db, 'DELETE FROM cards WHERE id = ? AND updated_at = ?', cardMatch[1], String(input.updatedAt || '')).run();
       if (!changes(result)) fail(409, '카드가 변경되었거나 이미 삭제됐습니다. 목록을 새로 확인해 주세요.');
+      await announce(context, { kind: 'cards' });
       return json({ deleted: true });
     }
     if (route === '/api/admin/cards' && method === 'DELETE') {
@@ -135,6 +141,7 @@ async function api(request, env, url, context) {
         stmt(db, "UPDATE island_state SET purge_nonce = '' WHERE id = 1 AND purge_nonce = ?", nonce),
       ]);
       if (!changes(results[0])) fail(409, '목록이 변경됐습니다. 새로고침한 목록을 확인한 뒤 다시 삭제해 주세요.');
+      await announce(context, { kind: 'cards' });
       // D1 meta.changes also counts cascades/triggers; RETURNING counts cards only.
       return json({ deleted: results[1].results.length });
     }
@@ -167,6 +174,7 @@ async function api(request, env, url, context) {
         ON CONFLICT(owner_hash) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at`,
         crypto.randomUUID(), ownerHash, JSON.stringify(fields), now, now, generation, expected, expected, ownerHash, ownerHash).run();
       if (!changes(result)) fail(409, '섬의 카드 상태가 변경됐습니다. 새로고침 후 다시 저장해 주세요. 초안은 기기에 남아 있습니다.');
+      await announce(context, { kind: 'cards' });
       return json({ card: publicCard(await first(db, 'SELECT * FROM cards WHERE owner_hash = ?', ownerHash)) });
     }
   }
@@ -186,10 +194,12 @@ async function api(request, env, url, context) {
     if (method === 'POST') {
       const input = await body(request); if (!TYPES.has(input.type) || typeof input.cardId !== 'string') fail(400, '반응을 확인해 주세요.');
       await rate(db, `reaction:${ownerHash}`, 12, 10000);
-      const actor = await first(db, 'SELECT id FROM cards WHERE owner_hash = ?', ownerHash); if (!actor) fail(403, '내 카드를 먼저 저장해 주세요.');
+      const actor = await first(db, 'SELECT id, data FROM cards WHERE owner_hash = ?', ownerHash); if (!actor) fail(403, '내 카드를 먼저 저장해 주세요.');
       const result = await stmt(db, `INSERT INTO reactions(card_id, actor_id, type, created_at)
         SELECT ?, ?, ?, ? WHERE EXISTS(SELECT 1 FROM cards WHERE id = ?) AND EXISTS(SELECT 1 FROM cards WHERE id = ?)`, input.cardId, actor.id, input.type, Date.now(), input.cardId, actor.id).run();
       if (!changes(result)) fail(404, '삭제된 카드입니다.');
+      const actorCard = JSON.parse(actor.data);
+      await announce(context, { kind: 'reaction', cardId: input.cardId, event: { id: Number(result.meta.last_row_id), type: input.type, actor: { id: actor.id, name: actorCard.name, mateId: actorCard.mateId, strokes: actorCard.strokes } } });
       // Events are transient; keep at most one hour of reactions.
       const cleanup = db.batch([stmt(db, 'DELETE FROM reactions WHERE created_at < ?', Date.now() - 3600000), stmt(db, 'DELETE FROM rate_limits WHERE expires_at <= ?', Date.now())]);
       if (context.waitUntil) context.waitUntil(cleanup); else await cleanup;

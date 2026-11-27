@@ -2,8 +2,9 @@
 export const UI = {
   colors: { text: '#304b5a', accent: '#cc8055', paper: '#fffdf6' },
   walking: { minSpeed: 12, maxSpeed: 21, runMultiplier: 2.4, pauseAtDestination: 2.5 },
-  sharedCardRefreshMs: 5000,
-  reactionRefreshMs: 2000,
+  // Shared Cloudflare mode pushes updates. These intervals only recover a lost connection.
+  sharedCardRefreshMs: 30000,
+  reactionRefreshMs: 30000,
 };
 // 입력 제한은 server/api.mjs 및 기기별 테스트 static-api.js와 함께 수정합니다.
 export const FIELDS = [

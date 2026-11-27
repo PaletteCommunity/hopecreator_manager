@@ -23,7 +23,7 @@ export async function createIslandServer({ databasePath = ':memory:', adminPassw
       if (incoming.method !== 'GET' && incoming.method !== 'HEAD') { init.body = Readable.toWeb(incoming); init.duplex = 'half'; }
       const request = new Request(url, init); let response;
       if (url.pathname.startsWith('/api/')) response = await handleApi(request, { DB, ADMIN_PASSWORD_HASH: adminPasswordHash, ALLOWED_ORIGINS: allowedOrigins }, { clientIp: incoming.socket.remoteAddress });
-      else if (url.pathname === '/studio/server-config.js') response = new Response(`export const API_BASE = ${JSON.stringify(origin)};\n`, { headers: { 'Content-Type': TYPES['.js'], 'Cache-Control': 'no-store' } });
+      else if (url.pathname === '/studio/server-config.js') response = new Response(`export const API_BASE = ${JSON.stringify(origin)};\nexport const LIVE_UPDATES = false;\n`, { headers: { 'Content-Type': TYPES['.js'], 'Cache-Control': 'no-store' } });
       else if (url.pathname === '/admin') response = new Response(null, { status: 302, headers: { Location: '/admin/' } });
       else {
         const route = decodeURIComponent(url.pathname);

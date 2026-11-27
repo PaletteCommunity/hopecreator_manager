@@ -38,6 +38,7 @@
 - `server/api.mjs`: 서버 입력 검증, 카드 소유권, 공유 카드·반응 API, 관리자 인증·삭제.
 - `server/schema.sql`: 카드, 반응, 관리자 세션과 요청 제한 테이블. 카드 삭제 시 관련 반응도 함께 삭제합니다.
 - `server/worker.mjs`, `wrangler.jsonc`: Cloudflare Workers + D1 배포.
+- `server/live.mjs`, `studio/live-client.js`: SQLite 기반 Durable Object의 휴면 가능한 WebSocket으로 변경을 즉시 전달합니다. 무료 요금제를 지원합니다.
 - `server/node.mjs`, `server/sqlite.mjs`: Node.js 24 + SQLite 실행·검증. 추가 패키지가 필요 없습니다.
 - `admin/`, `studio/admin.js`, `studio/admin.css`: 관리자 로그인, 목록·카드 확인, 개별 삭제, 전체 삭제.
 - `studio/api-client.js`, `studio/server-config.js`: 기존 화면의 저장·반응을 공유 서버와 연결합니다.
@@ -47,3 +48,7 @@
 검사: `node server/test.mjs`. 두 기기 공유·소유권·반응·관리자 권한·삭제·충돌·재시작 후 저장·로그아웃·세션 만료 등 51개 검사를 실행합니다.
 
 배포 순서는 `server/DEPLOY.md`에 있습니다. 계정, 데이터베이스 ID, 관리자 비밀번호를 연결하기 전에는 외부 공유 서버 배포가 완료된 상태가 아닙니다.
+
+공유 서버의 정상 실시간 연결에서는 2초·5초 주기 조회를 하지 않습니다. 카드 변경 알림과 반응을 연결된 화면에 전달하고, 카드 변경 시에만 목록을 다시 읽습니다. 연결이 끊어지면 30초 간격의 복구 조회를 사용하며, 연결 중에는 5분 간격으로 목록을 확인합니다. 화면을 보지 않는 탭은 연결을 닫습니다.
+
+50개 동시 연결에서 카드 50개, 반응 50개, 관리자 전체 삭제의 총 5,050회 전달을 로컬 Cloudflare 런타임에서 검증했습니다. 50명이 두 시간 동안 각자 카드 저장 6회·반응 120회를 사용하는 시나리오의 Worker 요청 계산은 약 23,600건입니다. 실제 두 시간 경과 부하 검사는 아니며, 한 시간 이상 행사 운영을 위한 사용량 여유를 확인한 계산입니다.

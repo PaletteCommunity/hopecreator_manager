@@ -1,4 +1,5 @@
 import { apiFetch, isShared } from './api-client.js';
+import { subscribeLive, liveConnected } from './live-client.js';
 import { MATES, DEMOS } from './data.js';
 import { UI, FIELDS, REACTIONS } from './ui-config.js';
 import { MATE_ASSETS } from './mate-assets.js';
@@ -85,12 +86,13 @@ function walk(time) {
   }
   requestAnimationFrame(walk);
 }
-let refreshSequence = 0;
+let refreshSequence = 0, lastSharedRefresh = 0, liveRefreshTimer = null;
 async function refresh() {
   const sequence = ++refreshSequence;
   try {
     const response = await apiFetch('/api/cards', { cache: 'no-store' }); if (!response.ok) throw Error(); const data = await response.json(); if (!Array.isArray(data.cards)) throw Error();
     if (sequence !== refreshSequence) return;
+    lastSharedRefresh = Date.now();
     state.cards = data.cards.filter(c => typeof c.dopamine === 'string'); state.signedIn = !!data.signedIn; state.preview = !!data.preview;
     if (data.mine && typeof data.mine.dopamine === 'string') { state.mine = data.mine; keep(OWN, data.mine); }
     else if (!state.mine?.localOnly) { state.mine = null; keep(OWN, null); }
@@ -176,8 +178,10 @@ async function saveImage() {
 }
 
 let reactionTimer = null, reactionCursor = 'latest', reactionBusy = false, reactionGeneration = 0;
+const reactionSeen = new Set();
 function stopReactions() { clearInterval(reactionTimer); reactionTimer = null; reactionGeneration++; }
 function floatReaction(event) {
+  if (event.id) { if (reactionSeen.has(event.id)) return; reactionSeen.add(event.id); if (reactionSeen.size > 500) reactionSeen.delete(reactionSeen.values().next().value); }
   if (!state.current || !REACTIONS[event.type]) return; positionReactions(); const bubble = el('div', 'reaction-float'); bubble.style.left = `${10 + Math.random() * 65}%`; bubble.append(portrait(event.actor), el('span', 'reaction-icon', REACTIONS[event.type]), el('span', 'reaction-name', event.actor.name)); $('reaction-stage').append(bubble); setTimeout(() => bubble.remove(), 4200);
 }
 function positionReactions() { const viewport = $('profile-viewport'); $('reaction-stage').style.top = `${viewport.offsetTop}px`; $('reaction-stage').style.height = `${viewport.clientHeight}px`; }
@@ -186,13 +190,13 @@ async function pollReactions(generation = reactionGeneration) {
   const id = state.current.id;
   try { const response = await apiFetch(`/api/reactions?cardId=${encodeURIComponent(id)}&after=${reactionCursor}`, { cache: 'no-store' }); if (!response.ok) return; const data = await response.json(); if (generation !== reactionGeneration || state.current?.id !== id) return; reactionCursor = data.cursor; for (const event of data.events || []) floatReaction(event); } catch { /* A later poll can recover transient connection failures. */ }
 }
-function startReactions(card) { reactionCursor = 'latest'; const generation = reactionGeneration; pollReactions(generation); if (!card.isDemo && !card.localOnly) reactionTimer = setInterval(() => pollReactions(generation), UI.reactionRefreshMs); }
+function startReactions(card) { reactionCursor = 'latest'; reactionSeen.clear(); const generation = reactionGeneration; pollReactions(generation); if (!card.isDemo && !card.localOnly) reactionTimer = setInterval(() => { if (!liveConnected()) pollReactions(generation); }, UI.reactionRefreshMs); }
 async function sendReaction(type) {
   if (reactionBusy || !state.current) return;
   if (!state.mine) return toast('내 캐릭터 카드를 먼저 만들어 주세요.');
   if (state.current.isDemo || state.current.localOnly || state.preview) { floatReaction({ type, actor: state.mine }); return; }
   reactionBusy = true;
-  try { const response = await apiFetch('/api/reactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cardId: state.current.id, type }) }); if (response.ok) await pollReactions(); else if (response.status === 429) toast('잠시 후 다시 눌러주세요.'); else toast('반응을 보내지 못했습니다.'); } catch { toast('연결을 확인해 주세요.'); } finally { setTimeout(() => reactionBusy = false, 800); }
+  try { const response = await apiFetch('/api/reactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cardId: state.current.id, type }) }); if (response.ok) { if (!liveConnected()) await pollReactions(); } else if (response.status === 429) toast('잠시 후 다시 눌러주세요.'); else toast('반응을 보내지 못했습니다.'); } catch { toast('연결을 확인해 주세요.'); } finally { setTimeout(() => reactionBusy = false, 800); }
 }
 
 for (const field of FIELDS) { $(field.id).maxLength = field.max; $(field.id).required = field.required; }
@@ -207,6 +211,15 @@ $('qr-open').addEventListener('click', () => showDialog($('qr-dialog'))); $('qr-
 for (const button of document.querySelectorAll('[data-reaction]')) button.addEventListener('click', () => sendReaction(button.dataset.reaction));
 for (const dialog of document.querySelectorAll('dialog')) dialog.addEventListener('click', event => { if (event.target !== dialog) return; const r = dialog.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) dialog.close(); });
 state.mine = isShared ? null : stored(OWN); renderGallery(); refresh(); requestAnimationFrame(walk); requestAnimationFrame(() => { const world = $('world'), stage = $('island-stage'); world.scrollLeft = (stage.clientWidth - world.clientWidth) / 2; world.scrollTop = Math.max(0, stage.clientHeight * .64 - world.clientHeight * .58); });
-setInterval(() => { if (!document.hidden && !document.querySelector('#editor[open]')) refresh(); }, UI.sharedCardRefreshMs);
+subscribeLive(event => {
+  if (event.kind === 'reaction') {
+    if (state.current?.id === event.cardId && $('profile-dialog').open && !document.hidden) { if (reactionCursor !== 'latest') reactionCursor = Math.max(Number(reactionCursor), Number(event.event.id) || 0); floatReaction(event.event); }
+  } else if (!document.querySelector('#editor[open]')) {
+    clearTimeout(liveRefreshTimer); liveRefreshTimer = setTimeout(refresh, 150);
+    if (event.kind === 'ready' && state.current) pollReactions();
+  }
+});
+setInterval(() => { if (!document.hidden && !document.querySelector('#editor[open]') && (!liveConnected() || Date.now() - lastSharedRefresh > 300000)) refresh(); }, UI.sharedCardRefreshMs);
+$('editor').addEventListener('close', () => { if (isShared) refresh(); });
 window.addEventListener('focus', refresh);
 
