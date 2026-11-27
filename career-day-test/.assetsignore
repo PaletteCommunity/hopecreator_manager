@@ -1,0 +1,12 @@
+server/
+work/
+node_modules/
+.git/
+.wrangler/
+.dev.vars*
+.env*
+*.sqlite*
+*.md
+wrangler.jsonc
+.gitignore
+.assetsignore

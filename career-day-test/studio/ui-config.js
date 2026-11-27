@@ -5,7 +5,7 @@ export const UI = {
   sharedCardRefreshMs: 5000,
   reactionRefreshMs: 2000,
 };
-// 입력 제한은 서버 app/api/cards/route.ts와 함께 수정해야 합니다.
+// 입력 제한은 server/api.mjs 및 기기별 테스트 static-api.js와 함께 수정합니다.
 export const FIELDS = [
   { key: 'name', id: 'name-input', label: '이름', max: 12, required: true },
   { key: 'jobInterest', id: 'jobInterest-input', label: '나의 관심 직무', max: 30, required: true },

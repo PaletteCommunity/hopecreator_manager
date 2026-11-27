@@ -1,4 +1,4 @@
-import { apiFetch } from './static-api.js';
+import { apiFetch, isShared } from './api-client.js';
 import { MATES, DEMOS } from './data.js';
 import { UI, FIELDS, REACTIONS } from './ui-config.js';
 import { MATE_ASSETS } from './mate-assets.js';
@@ -50,10 +50,11 @@ function portrait(card, forceMate = false) {
 }
 function cards() {
   const real = [...state.cards]; if (state.mine && !real.some(c => c.id === state.mine.id)) real.unshift(state.mine);
-  real.sort((a, b) => Number(own(b)) - Number(own(a))); return real.length ? real : SAMPLE_CARDS;
+  real.sort((a, b) => Number(own(b)) - Number(own(a))); return real.length ? real : isShared ? [] : SAMPLE_CARDS;
 }
 function renderGallery() {
   const profiles = cards(); $('avatars').replaceChildren(); $('card-grid').replaceChildren();
+  $('empty-state').textContent = isShared && !profiles.length ? '아직 등록된 카드가 없습니다.' : ''; $('empty-state').hidden = !!profiles.length;
   for (const [index, card] of profiles.entries()) {
     const button = el('button', `avatar-button${own(card) ? ' mine' : ''}`); button.type = 'button'; button.setAttribute('aria-label', `${card.isDemo ? '예시 ' : ''}${card.name}의 카드 보기`);
     const art = el('span', 'avatar-art'); art.append(portrait(card)); const greeting = el('span', 'encounter-mark', '👋'); greeting.setAttribute('aria-hidden', 'true'); button.append(art, greeting, el('span', 'avatar-name', card.name)); button.addEventListener('click', () => openProfile(card)); $('avatars').append(button);
@@ -84,13 +85,17 @@ function walk(time) {
   }
   requestAnimationFrame(walk);
 }
+let refreshSequence = 0;
 async function refresh() {
+  const sequence = ++refreshSequence;
   try {
     const response = await apiFetch('/api/cards', { cache: 'no-store' }); if (!response.ok) throw Error(); const data = await response.json(); if (!Array.isArray(data.cards)) throw Error();
+    if (sequence !== refreshSequence) return;
     state.cards = data.cards.filter(c => typeof c.dopamine === 'string'); state.signedIn = !!data.signedIn; state.preview = !!data.preview;
     if (data.mine && typeof data.mine.dopamine === 'string') { state.mine = data.mine; keep(OWN, data.mine); }
     else if (!state.mine?.localOnly) { state.mine = null; keep(OWN, null); }
-    notice('기기별 테스트 · 다른 기기와 카드·반응은 공유되지 않습니다.'); const key = JSON.stringify([state.cards, state.mine]); if (refresh.key !== key) { refresh.key = key; renderGallery(); }
+    if (isShared && state.current && !state.current.localOnly && !data.cards.some(c => c.id === state.current.id)) { closeProfile(); state.current = null; toast('삭제된 카드입니다.'); }
+    notice(isShared ? '' : '기기별 테스트 · 다른 기기와 카드·반응은 공유되지 않습니다.'); const key = JSON.stringify([state.cards, state.mine]); if (refresh.key !== key) { refresh.key = key; renderGallery(); }
   } catch { notice('연결을 확인하지 못했습니다.'); }
 }
 
@@ -123,7 +128,7 @@ async function submit(event) {
   catch { /* The full draft remains on this device until a shared save succeeds. */ }
   finally { $('submit-profile').disabled = false; $('submit-profile').textContent = '저장'; }
   if (!saved) state.mine = { ...draft, id: state.mine?.id || `local-${crypto.randomUUID()}`, localOnly: true };
-  keep(OWN, state.mine); keep(KEY, draft); $('editor').close(); renderGallery(); openProfile(state.mine); toast(saved ? '저장했습니다.' : '이 기기에 임시 저장했습니다.');
+  refreshSequence++; keep(OWN, state.mine); keep(KEY, draft); $('editor').close(); renderGallery(); openProfile(state.mine); toast(saved ? '저장했습니다.' : '이 기기에 임시 저장했습니다.');
   if (saved) await refresh(); else notice('공유 저장은 완료되지 않았습니다. 연결 후 다시 저장해 주세요.');
 }
 
@@ -201,7 +206,7 @@ for (const view of ['world', 'grid']) $(`${view}-view`).addEventListener('click'
 $('qr-open').addEventListener('click', () => showDialog($('qr-dialog'))); $('qr-close').addEventListener('click', () => $('qr-dialog').close());
 for (const button of document.querySelectorAll('[data-reaction]')) button.addEventListener('click', () => sendReaction(button.dataset.reaction));
 for (const dialog of document.querySelectorAll('dialog')) dialog.addEventListener('click', event => { if (event.target !== dialog) return; const r = dialog.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) dialog.close(); });
-state.mine = stored(OWN); renderGallery(); refresh(); requestAnimationFrame(walk); requestAnimationFrame(() => { const world = $('world'), stage = $('island-stage'); world.scrollLeft = (stage.clientWidth - world.clientWidth) / 2; world.scrollTop = Math.max(0, stage.clientHeight * .64 - world.clientHeight * .58); });
+state.mine = isShared ? null : stored(OWN); renderGallery(); refresh(); requestAnimationFrame(walk); requestAnimationFrame(() => { const world = $('world'), stage = $('island-stage'); world.scrollLeft = (stage.clientWidth - world.clientWidth) / 2; world.scrollTop = Math.max(0, stage.clientHeight * .64 - world.clientHeight * .58); });
 setInterval(() => { if (!document.hidden && !document.querySelector('#editor[open]')) refresh(); }, UI.sharedCardRefreshMs);
 window.addEventListener('focus', refresh);
 

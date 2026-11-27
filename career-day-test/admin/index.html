@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="theme-color" content="#ff6b23">
+  <title>Hope Creator · 관리자</title>
+  <link rel="stylesheet" href="../studio/fonts.css">
+  <link rel="stylesheet" href="../studio/admin.css">
+</head>
+<body>
+<div id="hc-admin">
+  <header class="admin-header"><a class="brand" href="../">Hope Creator</a><span>관리자</span></header>
+  <main>
+    <section id="login-panel" class="login-panel" aria-labelledby="login-title">
+      <h1 id="login-title">관리자 로그인</h1>
+      <form id="login-form">
+        <label for="admin-password">비밀번호</label>
+        <input id="admin-password" name="password" type="password" autocomplete="current-password" required maxlength="256">
+        <button class="primary" id="login-button" type="submit">로그인</button>
+      </form>
+      <p id="login-error" class="error" role="alert" hidden></p>
+    </section>
+    <section id="management" hidden aria-labelledby="management-title">
+      <div class="management-heading"><div><h1 id="management-title">캐릭터 관리</h1><p id="card-count">등록된 캐릭터 0개</p></div><div class="toolbar"><button id="refresh-button" type="button">새로고침</button><button id="logout-button" type="button">로그아웃</button></div></div>
+      <div class="list-actions"><p id="last-refresh" class="muted" aria-live="polite"></p><button id="delete-all-button" class="danger-outline" type="button">전체 삭제</button></div>
+      <p id="management-error" class="error" role="alert" hidden></p>
+      <p id="empty-message" class="empty-message" hidden>등록된 캐릭터가 없습니다.</p>
+      <div id="admin-cards" class="admin-cards"></div>
+    </section>
+  </main>
+  <dialog id="delete-dialog" aria-labelledby="delete-title">
+    <form id="delete-form">
+      <h2 id="delete-title">캐릭터 삭제</h2>
+      <p id="delete-description"></p>
+      <div id="confirmation-field" hidden><label for="delete-confirmation">확인을 위해 <strong>전체 삭제</strong>를 입력해 주세요.</label><input id="delete-confirmation" autocomplete="off" spellcheck="false" maxlength="20"></div>
+      <p id="delete-error" class="error" role="alert" hidden></p>
+      <div class="dialog-actions"><button id="cancel-delete" type="button">취소</button><button id="confirm-delete" class="danger" type="submit">삭제</button></div>
+    </form>
+  </dialog>
+  <dialog id="detail-dialog" aria-labelledby="detail-name"><div class="detail-heading"><h2 id="detail-name"></h2><button id="close-detail" aria-label="카드 닫기" type="button">닫기</button></div><div id="detail-content"></div></dialog>
+  <p id="admin-status" class="status" role="status" aria-live="polite" hidden></p>
+</div>
+<script type="module" src="../studio/admin.js"></script>
+</body>
+</html>
