@@ -375,3 +375,9 @@ html,body{height:100%;overflow:hidden;background:#72d6e7}#hc-root{height:100dvh}
 @keyframes hc-avatar-dance{0%,100%{transform:translate(0,0) rotate(0) scale(1)}15%{transform:translate(-3px,-2px) rotate(-9deg) scale(1.015,.985)}32%{transform:translate(-1px,0) rotate(-3deg) scale(.99,1.01)}50%{transform:translate(3px,-3px) rotate(9deg) scale(1.015,.985)}68%{transform:translate(1px,0) rotate(3deg) scale(.99,1.01)}84%{transform:translate(-2px,-2px) rotate(-6deg) scale(1.01,.99)}}
 @media(max-width:650px){#hc-root .mini-card{border-radius:14px}#hc-root .my-card-dock .button{border-radius:12px}}
 @media(prefers-reduced-motion:reduce){#hc-root .avatar-button.is-dancing>.avatar-art,#hc-root .avatar-art.is-dancing{animation:none!important;transform:none!important;will-change:auto}}
+
+/* Interest stays beneath the centered nickname in the card collection. */
+#hc-root .mini-card{height:350px}
+#hc-root .mini-card>p.mini-job{display:block;flex:0 0 auto;width:100%;max-width:100%;margin:0 0 4px;color:#716b65;font-family:var(--font-body);font-size:14px;font-weight:400;line-height:1.4;text-align:center;white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
+@media(max-width:650px){#hc-root .mini-card{height:300px}}
+@media(max-width:350px){#hc-root .mini-card{height:360px}}

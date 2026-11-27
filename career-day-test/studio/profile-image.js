@@ -59,20 +59,22 @@ export async function createProfileImage(card, { mates, assets, drawStrokes }) {
   const identityTextHeight = nameLines.length * 84 + (jobLines.length ? 15 + jobLines.length * 46 : 0);
   const headerHeight = Math.max(300, identityTextHeight + 92);
   const sections = [
-    { kind: 'dopamine', label: '요즘 나의 도파민', value: card.dopamine },
     { kind: 'current', label: '나를 보여주는 경험', value: card.experience, mate: current, image: currentImage },
     { kind: 'aspiration', label: '앞으로 닮고 싶은 모습', value: card.attempts, mate: aspiration, image: aspirationImage },
     { kind: 'concern', label: '진로 고민 · 궁금한 점', value: card.concern },
+    { kind: 'dopamine', label: '요즘 나의 도파민', value: card.dopamine },
   ].map((section, index) => {
-    const inset = section.kind === 'dopamine' ? 26 : 0;
-    const bodyLines = linesFor(ctx, section.value, content.width - inset * 2, fonts.body);
+    const inset = section.kind === 'current' ? 26 : 0;
+    const bodyFont = section.kind === 'dopamine' ? `40px ${BODY}` : fonts.body;
+    const lineHeight = section.kind === 'dopamine' ? 58 : 64;
+    const bodyLines = linesFor(ctx, section.value, content.width - inset * 2, bodyFont);
     ctx.font = fonts.label; const labelWidth = ctx.measureText(section.label).width;
     const tagText = section.mate ? `${section.mate.name} · #${section.mate.value}` : '';
     ctx.font = fonts.tag; const tagWidth = tagText ? Math.ceil(ctx.measureText(tagText).width) + 76 : 0;
-    const tagOnNextLine = !!tagWidth && labelWidth + tagWidth + 20 > content.width;
+    const tagOnNextLine = !!tagWidth && labelWidth + tagWidth + 20 > content.width - inset * 2;
     const labelHeight = section.kind === 'dopamine' ? 44 : tagOnNextLine ? 105 : 58;
-    const height = inset * 2 + labelHeight + 12 + bodyLines.length * 64;
-    return { ...section, inset, bodyLines, labelWidth, tagText, tagWidth, tagOnNextLine, labelHeight, height, gapBefore: index === 0 ? 0 : index === 1 ? 30 : 48 };
+    const height = inset * 2 + labelHeight + 12 + bodyLines.length * lineHeight;
+    return { ...section, inset, bodyFont, lineHeight, bodyLines, labelWidth, tagText, tagWidth, tagOnNextLine, labelHeight, height, gapBefore: index === 0 ? 0 : index === 1 ? 30 : 48 };
   });
 
   const bodyTop = frame.y + headerHeight + 40;
@@ -99,17 +101,17 @@ export async function createProfileImage(card, { mates, assets, drawStrokes }) {
     const section = sections[index];
     if (index >= 2) { ctx.strokeStyle = COLORS.rule; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(content.x, top + section.gapBefore / 2); ctx.lineTo(content.x + content.width, top + section.gapBefore / 2); ctx.stroke(); }
     top += section.gapBefore;
-    if (section.kind === 'dopamine') { rounded(ctx, content.x, top, content.width, section.height, 20); ctx.fillStyle = COLORS.dopamine; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#f0d8c4'; ctx.stroke(); }
+    if (section.kind === 'current') { rounded(ctx, content.x, top, content.width, section.height, 20); ctx.fillStyle = COLORS.dopamine; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#f0d8c4'; ctx.stroke(); }
     const innerX = content.x + section.inset, innerY = top + section.inset;
-    ctx.font = fonts.label; ctx.fillStyle = section.kind === 'concern' ? '#68615c' : COLORS.label; ctx.textBaseline = 'alphabetic'; ctx.fillText(section.label, innerX, innerY + 35);
+    ctx.font = fonts.label; ctx.fillStyle = section.kind === 'dopamine' ? '#79716a' : section.kind === 'concern' ? '#68615c' : COLORS.label; ctx.textBaseline = 'alphabetic'; ctx.fillText(section.label, innerX, innerY + 35);
     if (section.mate) {
-      const tagX = section.tagOnNextLine ? content.x : content.x + content.width - section.tagWidth;
+      const tagX = section.tagOnNextLine ? innerX : content.x + content.width - section.inset - section.tagWidth;
       const tagY = innerY + (section.tagOnNextLine ? 47 : 0);
       rounded(ctx, tagX, tagY, section.tagWidth, 58, 14); ctx.fillStyle = COLORS.tag; ctx.fill(); ctx.strokeStyle = COLORS.tagEdge; ctx.lineWidth = 2; ctx.stroke();
       assetPortrait(ctx, section.image, assets[section.mate.id], tagX + 7, tagY + 5, 48);
       ctx.font = fonts.tag; ctx.fillStyle = '#81573d'; ctx.textBaseline = 'middle'; ctx.fillText(section.tagText, tagX + 62, tagY + 29);
     }
-    textLines(ctx, section.bodyLines, innerX, innerY + section.labelHeight + 12 + 46, 64, fonts.body, COLORS.text);
+    textLines(ctx, section.bodyLines, innerX, innerY + section.labelHeight + 12 + (section.kind === 'dopamine' ? 42 : 46), section.lineHeight, section.bodyFont, section.kind === 'dopamine' ? '#66615d' : COLORS.text);
     top += section.height;
   }
   ctx.restore(); rounded(ctx, frame.x, frame.y, frame.width, frameHeight, frame.radius); ctx.strokeStyle = COLORS.edge; ctx.lineWidth = 3; ctx.stroke();

@@ -59,7 +59,7 @@ function renderGallery() {
     const art = el('span', 'avatar-art'); art.append(portrait(card)); const greeting = el('span', 'encounter-mark', '👋'); greeting.setAttribute('aria-hidden', 'true'); button.append(art, greeting, el('span', 'avatar-name', card.name)); button.addEventListener('click', () => openProfile(card)); $('avatars').append(button);
     const old = walkers.get(card.id); const walker = { ...(old || makeWalker(card.id, index, profiles.length, Math.random, UI.walking)), node: button, hover: false, focused: false };
     button.addEventListener('pointerenter', () => walker.hover = true); button.addEventListener('pointerleave', () => walker.hover = false); walkers.set(card.id, walker);
-    const tile = el('button', 'mini-card'); tile.type = 'button'; tile.setAttribute('aria-label', `${card.isDemo ? '예시 ' : ''}${card.name}의 카드 보기`); tile.append(portrait(card), el('strong', '', card.name)); tile.addEventListener('click', () => openProfile(card)); $('card-grid').append(tile);
+    const tile = el('button', 'mini-card'); tile.type = 'button'; tile.setAttribute('aria-label', `${card.isDemo ? '예시 ' : ''}${card.name}의 카드 보기`); tile.append(portrait(card), el('strong', '', card.name)); if (card.jobInterest) tile.append(el('p', 'mini-job', card.jobInterest)); tile.addEventListener('click', () => openProfile(card)); $('card-grid').append(tile);
   }
   for (const id of walkers.keys()) if (!profiles.some(c => c.id === id)) walkers.delete(id);
   $('world').hidden = state.view !== 'world'; $('card-grid').hidden = state.view !== 'grid'; $('motion-toggle').hidden = state.view !== 'world';
@@ -159,7 +159,7 @@ function setPresentation(enabled) { $('profile-dialog').classList.toggle('presen
 function openProfile(card) {
   stopReactions(); state.current = card; const current = mate(card.mateId), aspiration = mate(card.aspirationMateId), node = $('profile-card'); node.replaceChildren();
   const top = el('header', 'card-identity'), heading = el('div', 'identity-copy'); heading.append(el('h2', '', card.name)); const job = el('p', 'identity-job', card.jobInterest || ''); job.setAttribute('aria-label', `관심 직무 ${card.jobInterest || ''}`); heading.append(job); top.append(portrait(card), heading); node.append(top);
-  const body = el('div', 'card-body'); profileBlock(body, 'dopamine', '요즘 나의 도파민', card.dopamine); profileBlock(body, 'current', '나를 보여주는 경험', card.experience, current); profileBlock(body, 'aspiration', '앞으로 닮고 싶은 모습', card.attempts, aspiration); profileBlock(body, 'concern', '진로 고민 · 궁금한 점', card.concern); node.append(body);
+  const body = el('div', 'card-body'); profileBlock(body, 'current', '나를 보여주는 경험', card.experience, current); profileBlock(body, 'aspiration', '앞으로 닮고 싶은 모습', card.attempts, aspiration); profileBlock(body, 'concern', '진로 고민 · 궁금한 점', card.concern); profileBlock(body, 'dopamine', '요즘 나의 도파민', card.dopamine); node.append(body);
   $('profile-kind').textContent = card.isDemo ? '예시 카드' : own(card) ? card.localOnly ? '기기 임시 저장' : '내 카드' : '';
   $('edit-profile').hidden = !own(card); $('save-image').hidden = !own(card); setPresentation(false); $('reaction-stage').replaceChildren(); showDialog($('profile-dialog')); $('profile-viewport').scrollTop = 0; scheduleProfileFit(); document.fonts.ready.then(scheduleProfileFit); startReactions(card);
 }
