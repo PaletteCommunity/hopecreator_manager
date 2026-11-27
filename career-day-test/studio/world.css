@@ -1,0 +1,31 @@
+/* A roomy map for fifty people. The map pans instead of shrinking on phones. */
+#hc-root .world{overflow:auto;touch-action:pan-x pan-y pinch-zoom;scroll-behavior:auto;scrollbar-width:none;background:#8ed9e4}
+#hc-root .island-stage{width:max(100%,var(--world-width,1600px));height:max(100dvh,var(--world-height,1040px));min-width:1600px;min-height:1040px;isolation:isolate}
+#hc-root .island-landscape{object-fit:fill;pointer-events:none;user-select:none;-webkit-user-drag:none}
+#hc-root .avatars{touch-action:pan-x pan-y pinch-zoom}
+#hc-root .avatar-button{width:72px;height:96px;min-width:72px;min-height:96px;max-width:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:visible;animation:none;touch-action:manipulation;will-change:transform}
+#hc-root .avatar-button .avatar-art{position:relative;display:flex;align-items:flex-end;justify-content:center;width:72px;height:70px;flex:0 0 70px;transform-origin:50% 100%}
+#hc-root .avatar-button .mate-portrait,#hc-root .avatar-button .mate-portrait.drawn{display:block;width:68px;height:70px;max-width:none;flex-shrink:0;aspect-ratio:auto;background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible;filter:none;transform:scaleX(var(--facing,1))}
+#hc-root .avatar-button .avatar-name{display:block;flex:0 0 auto;min-height:21px;max-width:104px;margin-top:4px;padding:2px 7px;border:1px solid #e8d9ce;border-radius:7px;background:#fffdfaf2;color:#333;box-shadow:0 2px 5px #3028200a;font-family:var(--font-display);font-size:12px;line-height:1.35;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+#hc-root .avatar-button.mine .avatar-name{background:#e96b2e;color:#fff;border-color:#e96b2e}
+#hc-root .avatar-button:hover,#hc-root .avatar-button:focus-visible{filter:drop-shadow(0 0 3px #fff);z-index:100!important}
+#hc-root .avatar-button:focus-visible{outline:2px solid #e96b2e;outline-offset:5px;border-radius:12px}
+
+/* Greeting decor belongs to the map, without adding text to a participant's card. */
+#hc-root .avatar-button .encounter-mark{position:absolute;right:-6px;top:-2px;z-index:3;display:none;place-items:center;width:29px;height:29px;min-width:29px;min-height:29px;padding:5px;border:1px solid #f1c6a9;border-radius:50%;background:#fffaf2;color:#e96b2e;box-shadow:0 2px 6px #5b46271c;pointer-events:none;transform-origin:50% 90%}
+#hc-root .avatar-button .encounter-mark svg{display:block;width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#hc-root .avatar-button.is-greeting .encounter-mark{display:grid;animation:hc-encounter-wave .48s ease-in-out 3}
+#hc-root .avatar-button.is-greeting>.avatar-art{animation:hc-avatar-greet .8s ease-in-out 2;transform-origin:50% 100%}
+@keyframes hc-avatar-greet{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(1px) rotate(calc(var(--facing,1) * 5deg)) scale(1.025,.975)}65%{transform:translateY(-3px) rotate(calc(var(--facing,1) * -3deg))}}
+@keyframes hc-encounter-wave{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(14deg)}}
+#hc-root .world.paused .avatar-button>.avatar-art,#hc-root .world.paused .encounter-mark,#hc-root .avatar-button:hover>.avatar-art,#hc-root .avatar-button:focus-visible>.avatar-art{animation-play-state:paused}
+@media(max-width:650px){
+  #hc-root .island-stage{min-width:1600px;min-height:1040px}
+  #hc-root .avatar-button{width:72px;height:96px;min-width:72px;min-height:96px}
+  #hc-root .avatar-button .avatar-art{width:72px;height:70px;flex-basis:70px}
+  #hc-root .avatar-button .mate-portrait,#hc-root .avatar-button .mate-portrait.drawn{width:68px;height:70px}
+  #hc-root .avatar-button .avatar-name{font-size:12px;max-width:104px}
+}
+@media(prefers-reduced-motion:reduce){
+  #hc-root .avatar-button>.avatar-art,#hc-root .avatar-button.is-greeting>.avatar-art,#hc-root .avatar-button .encounter-mark{animation:none!important;will-change:auto}
+}

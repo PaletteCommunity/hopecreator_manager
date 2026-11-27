@@ -1,87 +1,66 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 800" role="img" aria-labelledby="island-title">
-  <title id="island-title">밝은 바다 위 모래와 잔디로 이루어진 작은 섬</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1040" role="img" aria-labelledby="island-title">
+  <title id="island-title">넓은 잔디 광장과 모래 해변을 가진 밝은 섬</title>
   <defs>
-    <clipPath id="island-edge">
-      <ellipse cx="550" cy="600" rx="470" ry="130"/>
-    </clipPath>
-    <clipPath id="grass-edge">
-      <ellipse cx="550" cy="587" rx="418" ry="111"/>
-    </clipPath>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#c3edfa"/><stop offset="1" stop-color="#b9edf4"/></linearGradient>
+    <linearGradient id="sea" x2="0" y2="1"><stop stop-color="#8edce6"/><stop offset="1" stop-color="#77cfdc"/></linearGradient>
+    <clipPath id="sand-edge"><ellipse cx="800" cy="685" rx="760" ry="310"/></clipPath>
+    <clipPath id="grass-edge"><ellipse cx="800" cy="666" rx="704" ry="267"/></clipPath>
+    <g id="palm">
+      <path d="M-12 1C-13-52 4-104 9-155c2-20 0-34-4-49l19-2c9 32 5 59-1 88C14-74 9-36 11 3Z" fill="#bb925d"/>
+      <path d="M2 2C1-49 14-100 19-150c2-25 3-38-1-56l6 0c9 32 5 59-1 88C14-74 9-36 11 3Z" fill="#a57b4e"/>
+      <path d="m-8-29 19 3m-15-35 18 4m-10-36 18 4m-12-35 18 3m-12-34 17 2" fill="none" stroke="#9e784c" stroke-width="3" stroke-linecap="round"/>
+      <path d="M15-201c-48-43-96-44-141-10 51-8 98 3 132 26Z" fill="#5aa46b"/>
+      <path d="M16-202c-36-66-87-80-141-58 57 12 97 36 128 73Z" fill="#77b978"/>
+      <path d="M17-204c-5-57 17-90 57-102-27 43-33 73-40 111Z" fill="#66ad6c"/>
+      <path d="M20-203c37-49 88-60 145-34-62 0-101 21-133 48Z" fill="#83bf7b"/>
+      <path d="M24-196c58-17 106 1 129 51-48-29-86-36-129-35Z" fill="#4b9864"/>
+      <path d="M15-195c-46-5-78 24-92 68 40-30 65-43 99-49Z" fill="#569e66"/>
+    </g>
+    <g id="rocks">
+      <path d="m-103 15 21-52 51-39 58 4 35 43 8 46-94 14Z" fill="#c88d6d"/>
+      <path d="m-82-37 51-39 58 4-25 30-49 16Z" fill="#dba383"/>
+      <path d="m2-42 25-30 35 43 8 46-38 8-28-29Z" fill="#ad755b"/>
+      <path d="m25 16 21-70 51-46 65 11 30 47 13 63-99 13Z" fill="#bd805f"/>
+      <path d="m46-54 51-46 65 11-26 32-55 15Z" fill="#d69b77"/>
+      <path d="m136-57 26-32 30 47 13 63-46 6-17-32Z" fill="#a86e53"/>
+    </g>
   </defs>
-
-  <!-- The open sky and level horizon keep this a quiet backdrop. -->
-  <path fill="#BCEBFA" d="M0 0h1100v420H0z"/>
-  <path fill="#72D4E1" d="M0 420h1100v380H0z"/>
-  <path fill="#82DCE6" d="M0 420h1100v34H0z"/>
-
-  <!-- One sand ellipse defines the complete island footprint. -->
-  <ellipse cx="550" cy="600" rx="470" ry="130" fill="#EDC37D"/>
-  <g clip-path="url(#island-edge)">
-    <ellipse cx="550" cy="585" rx="472" ry="129" fill="#F8DEA0"/>
-    <path d="M71 615c64 66 247 101 479 101s417-35 479-101v131H71z" fill="#F2D18C"/>
+  <path fill="url(#sky)" d="M0 0h1600v420H0z"/>
+  <path fill="url(#sea)" d="M0 420h1600v620H0z"/>
+  <path fill="#a7e5eb" d="M0 420h1600v26H0z"/>
+  <g fill="#fff" opacity=".22">
+    <path d="M162 226c18-24 48-29 73-13 28-32 79-27 99 7 27-3 46 8 48 21H143c-1-8 7-13 19-15Z"/>
+    <path d="M1084 149c15-21 42-26 63-12 24-28 68-24 86 6 23-3 39 7 41 18h-207c-1-7 6-11 17-12Z"/>
   </g>
-
-  <!-- The whole central walking ellipse stays free of scenery. -->
-  <ellipse cx="550" cy="587" rx="418" ry="111" fill="#88BE6C"/>
+  <!-- A large, uninterrupted gathering ground keeps all fifty feet on land. -->
+  <ellipse cx="800" cy="701" rx="787" ry="325" fill="#a8e4df" opacity=".9"/>
+  <ellipse cx="800" cy="690" rx="772" ry="316" fill="#d5edcb" opacity=".62"/>
+  <ellipse cx="800" cy="685" rx="760" ry="310" fill="#e8c789"/>
+  <g clip-path="url(#sand-edge)">
+    <ellipse cx="800" cy="669" rx="765" ry="308" fill="#f7dfaa"/>
+    <path d="M30 789c104 119 387 184 770 184 375 0 670-65 770-184v260H30Z" fill="#f0d397"/>
+  </g>
+  <ellipse cx="800" cy="666" rx="704" ry="267" fill="#8fc176"/>
   <g clip-path="url(#grass-edge)">
-    <ellipse cx="550" cy="574" rx="421" ry="111" fill="#ADD989"/>
-    <path d="M130 504c108-35 259-45 421-43 151 1 307 14 421 45l-12-58H139z" fill="#9DCE7C"/>
+    <ellipse cx="800" cy="651" rx="706" ry="267" fill="#b5d995"/>
+    <path d="M85 483c166-67 426-94 715-94s551 27 715 94v-140H85Z" fill="#a6ce86"/>
+    <path d="M89 735c95 119 365 185 711 185s618-66 711-185v227H89Z" fill="#a7cf88" opacity=".65"/>
   </g>
-
-  <!-- Low, faceted rocks sit behind the unobstructed grass. -->
-  <g>
-    <path d="m269 482 20-54 47-34 60 4 37 49 4 43-83 10z" fill="#C38260"/>
-    <path d="m289 428 47-34 60 4-24 29-45 12z" fill="#DBA17C"/>
-    <path d="m372 427 24-29 37 49 4 43-36 5-26-30z" fill="#A96B51"/>
-    <path d="m269 482 58-43 45-12 3 38 26 30-47 5z" fill="#C98A68"/>
-
-    <path d="m383 473 22-50 55-41 73 8 38 45 13 51-86 11-78-5z" fill="#BB775A"/>
-    <path d="m405 423 55-41 73 8-24 26-60 12z" fill="#D59670"/>
-    <path d="m509 416 24-26 38 45 13 51-41 6-23-37z" fill="#A66A51"/>
-    <path d="m383 473 37-24 29-21 60-12 11 39-22 42-78-5z" fill="#C38461"/>
-
-    <path d="m556 482 16-46 37-24 53 4 35 34 14 38-78 10z" fill="#CC8A65"/>
-    <path d="m572 436 37-24 53 4-19 23-37 5z" fill="#DFA17B"/>
-    <path d="m643 439 19-23 35 34 14 38-39 5z" fill="#B57658"/>
-
-    <path d="m683 482 16-37 43-19 46 11 31 43-57 17z" fill="#BF7D5D"/>
-    <path d="m699 445 43-19 46 11-30 16-29 3z" fill="#DA9B73"/>
-    <path d="m758 453 30-16 31 43-36 11z" fill="#A96D54"/>
+  <!-- Walk ellipse: center(.5,.64), radii(.39,.22). Scenery stays beyond it. -->
+  <use href="#rocks" transform="translate(690 400) scale(.96)"/>
+  <use href="#rocks" transform="translate(895 395) scale(.69)"/>
+  <use href="#palm" transform="translate(216 515) scale(.91) rotate(-6)"/>
+  <use href="#palm" transform="translate(1390 493) scale(1.04) rotate(7)"/>
+  <use href="#palm" transform="translate(1494 685) scale(.65) rotate(10)"/>
+  <g fill="#c79c72">
+    <path d="m90 699 17-21 27 2 18 24-27 9Z"/>
+    <path d="m1434 826 19-25 32 7 16 21-42 8Z"/>
+    <path d="m254 889 11-14 19 1 12 17-22 5Z"/>
   </g>
-
-  <!-- Three palms stay within the back scenery band, y=270..500. -->
-  <g transform="translate(0 86.331) scale(1 .827338)">
-    <!-- Left palm. -->
-    <path d="M210 493c7-36 17-73 28-111 8-28 11-49 9-64l16-2c4 24-1 52-9 80-10 36-18 69-20 98z" fill="#BA8D5B"/>
-    <path d="M225 493c4-38 14-76 23-108 8-29 11-51 9-68l6-1c4 24-1 52-9 80-10 36-18 69-20 98z" fill="#9F794E"/>
-    <path d="m220 453 18 4m-8-34 17 5m-9-33 17 5m-11-32 17 5" fill="none" stroke="#9F794E" stroke-width="3" stroke-linecap="round"/>
-    <path d="M256 321c-36-30-74-33-112-6 39-7 75 1 101 18z" fill="#4F9D63"/>
-    <path d="M255 321c-28-50-66-60-105-44 43 9 73 28 96 55z" fill="#69B36C"/>
-    <path d="M256 320c-4-43 12-68 42-77-19 32-23 55-28 84z" fill="#5DA965"/>
-    <path d="M258 322c27-36 66-45 108-25-47 0-74 16-99 35z" fill="#70B86F"/>
-    <path d="M260 324c43-12 79 2 96 39-36-22-64-26-96-26z" fill="#438D5D"/>
-    <path d="M254 326c-35-3-59 18-70 51 30-23 49-32 74-37z" fill="#4A965E"/>
-
-    <!-- Taller palm at the right back edge. -->
-    <path d="M817 489c-6-39-6-78-4-111 2-30 0-58-7-80l17-5c10 30 13 57 11 89-2 37 0 71 6 108z" fill="#C39663"/>
-    <path d="M830 490c-6-40-7-78-5-112 2-30-1-60-7-84l5-1c10 30 13 57 11 89-2 37 0 71 6 108z" fill="#AA8052"/>
-    <path d="m816 449 19-1m-21-34 18-1m-18-32 18-1m-19-30 18-2" fill="none" stroke="#A67D50" stroke-width="3" stroke-linecap="round"/>
-    <path d="M816 302c-35-32-75-33-111-3 44-10 75-2 104 15z" fill="#4E9C63"/>
-    <path d="M816 301c-31-49-68-60-108-43 44 8 72 27 99 53z" fill="#70B86F"/>
-    <path d="M817 299c0-45 18-69 49-77-21 29-30 57-34 83z" fill="#61AC67"/>
-    <path d="M820 302c28-34 66-43 105-21-43-1-72 13-98 31z" fill="#79BC74"/>
-    <path d="M822 306c43-11 76 5 91 43-33-21-62-27-93-29z" fill="#468F5D"/>
-    <path d="M813 307c-29 2-50 24-53 56 24-24 39-36 60-42z" fill="#539D61"/>
-
-    <!-- Smaller, gently leaning palm. -->
-    <path d="M945 500c0-29-4-56-12-81-6-23-8-44-3-62l13 2c-3 20-1 37 7 59 8 25 13 52 14 82z" fill="#C39663"/>
-    <path d="M957 500c-1-31-7-57-13-79-7-23-9-44-5-63l4 1c-3 20-1 37 7 59 8 25 13 52 14 82z" fill="#AA8052"/>
-    <path d="m946 473 15-1m-20-26 15-3m-23-25 15-4m-19-24 15-1" fill="none" stroke="#A67D50" stroke-width="3" stroke-linecap="round"/>
-    <path d="M935 363c-30-27-61-29-92-8 36-5 60 3 84 16z" fill="#4C995F"/>
-    <path d="M935 361c-19-37-50-50-84-39 34 8 54 24 78 47z" fill="#6BAF6A"/>
-    <path d="M936 360c3-33 20-53 45-56-20 22-29 42-32 61z" fill="#63A965"/>
-    <path d="M939 362c25-28 56-31 87-12-35-2-58 9-81 21z" fill="#79B972"/>
-    <path d="M942 365c34-8 60 6 72 36-27-16-50-22-74-22z" fill="#478E59"/>
-    <path d="M933 366c-27 2-44 21-47 46 22-21 37-30 54-34z" fill="#529B5F"/>
+  <g fill="none" stroke="#d8f5ee" stroke-width="4" stroke-linecap="round" opacity=".72">
+    <path d="M101 901q41 15 78 17M1308 965q49-9 83-22M42 552q21-24 43-37"/>
+  </g>
+  <g fill="#e8bd80" opacity=".7">
+    <ellipse cx="344" cy="937" rx="7" ry="2"/><ellipse cx="1180" cy="942" rx="9" ry="2.5"/><ellipse cx="1451" cy="772" rx="5" ry="2"/>
   </g>
 </svg>

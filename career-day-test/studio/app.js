@@ -2,6 +2,8 @@ import { apiFetch } from './static-api.js';
 import { MATES, DEMOS } from './data.js';
 import { UI, FIELDS, REACTIONS } from './ui-config.js';
 import { MATE_ASSETS } from './mate-assets.js';
+import { makeWalker, stepWorld } from './island-motion.js';
+import { createProfileImage } from './profile-image.js';
 
 const $ = id => document.getElementById(id);
 const el = (tag, cls, value) => { const node = document.createElement(tag); if (cls) node.className = cls; if (value !== undefined) node.textContent = value; return node; };
@@ -10,6 +12,8 @@ const KEY = `${SCOPE}-draft`, OWN = `${SCOPE}-own`;
 const PENS = ['#304b5a', '#ce754a', '#81a9be', '#8ba38a', '#bd8fa4'];
 const state = { cards: [], mine: null, current: null, view: 'world', paused: matchMedia('(prefers-reduced-motion: reduce)').matches, mateId: '', aspirationMateId: '', pickerTarget: 'mateId', strokes: [], pen: PENS[0], width: .012, signedIn: false, preview: false };
 const walkers = new Map();
+const EXTRA_DEMO_NAMES = ['귤조각', '작은등대', '모래별', '종이비행', '동그란꿈', '봄빛연구소', '밤하늘공방', '단단한새싹', '반짝호기심', '바다우체국', '아침노을', '호두연필', '오렌지파도', '두둥실', '말랑도전', '초록노트', '자유로운점', '오늘의발견', '보통의용기', '고요한리듬', '해바라기씨', '조각구름', '소다상상', '반달책상', '지구산책자', '내일한모금', '노란단추', '우연한발명', '첫번째용기', '가벼운시작', '구르는사과', '꿈꾸는빈칸'];
+const SAMPLE_CARDS = [...DEMOS, ...EXTRA_DEMO_NAMES.map((name, i) => ({ ...DEMOS[i % DEMOS.length], id: `demo-${String(i + DEMOS.length + 1).padStart(2, '0')}`, name, isDemo: true }))];
 for (const [key, value] of Object.entries(UI.colors)) document.documentElement.style.setProperty(`--ui-${key}`, value);
 function stored(key) { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; } }
 function keep(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch { toast('기기 저장 공간을 확인해 주세요.'); } }
@@ -46,15 +50,14 @@ function portrait(card, forceMate = false) {
 }
 function cards() {
   const real = [...state.cards]; if (state.mine && !real.some(c => c.id === state.mine.id)) real.unshift(state.mine);
-  real.sort((a, b) => Number(own(b)) - Number(own(a))); return real.length ? real : DEMOS;
+  real.sort((a, b) => Number(own(b)) - Number(own(a))); return real.length ? real : SAMPLE_CARDS;
 }
-function destination() { const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()); return { x: .5 + Math.cos(a) * r * .33, y: .755 + Math.sin(a) * r * .10 }; }
 function renderGallery() {
   const profiles = cards(); $('avatars').replaceChildren(); $('card-grid').replaceChildren();
-  for (const card of profiles) {
+  for (const [index, card] of profiles.entries()) {
     const button = el('button', `avatar-button${own(card) ? ' mine' : ''}`); button.type = 'button'; button.setAttribute('aria-label', `${card.isDemo ? '예시 ' : ''}${card.name}의 카드 보기`);
-    const art = el('span', 'avatar-art'); art.append(portrait(card)); button.append(art, el('span', 'avatar-name', card.name)); button.addEventListener('click', () => openProfile(card)); $('avatars').append(button);
-    const old = walkers.get(card.id); const walker = { ...(old || destination()), goal: old?.goal || destination(), speed: old?.speed || UI.walking.minSpeed + Math.random() * (UI.walking.maxSpeed - UI.walking.minSpeed), wait: old?.wait || 0, nextPlay: old?.nextPlay ?? 2 + Math.random() * 8, playLeft: old?.playLeft || 0, play: old?.play || '', node: button, hover: false };
+    const art = el('span', 'avatar-art'); art.append(portrait(card)); const greeting = el('span', 'encounter-mark', '👋'); greeting.setAttribute('aria-hidden', 'true'); button.append(art, greeting, el('span', 'avatar-name', card.name)); button.addEventListener('click', () => openProfile(card)); $('avatars').append(button);
+    const old = walkers.get(card.id); const walker = { ...(old || makeWalker(card.id, index, profiles.length, Math.random, UI.walking)), node: button, hover: false, focused: false };
     button.addEventListener('pointerenter', () => walker.hover = true); button.addEventListener('pointerleave', () => walker.hover = false); walkers.set(card.id, walker);
     const tile = el('button', 'mini-card'); tile.type = 'button'; tile.setAttribute('aria-label', `${card.isDemo ? '예시 ' : ''}${card.name}의 카드 보기`); tile.append(portrait(card), el('strong', '', card.name)); tile.addEventListener('click', () => openProfile(card)); $('card-grid').append(tile);
   }
@@ -69,19 +72,14 @@ let frame = 0;
 function walk(time) {
   const delta = Math.min((time - frame) / 1000, .05); frame = time; const w = $('island-stage').clientWidth, h = $('island-stage').clientHeight;
   const moving = !state.paused && !document.hidden && state.view === 'world' && !document.querySelector('dialog[open]');
-  const first = walkers.values().next().value?.node; const anchorX = (first?.offsetWidth || 112) / 2, anchorY = first?.offsetHeight || 146;
-  for (const a of walkers.values()) {
-    const active = moving && !a.hover && document.activeElement !== a.node;
-    if (active) {
-      a.nextPlay -= delta; a.playLeft = Math.max(0, a.playLeft - delta);
-      if (a.playLeft === 0) a.play = '';
-      if (a.nextPlay <= 0) { const chance = Math.random(); a.play = chance < .35 ? 'hopping' : chance < .6 ? 'running' : 'dancing'; a.playLeft = a.play === 'hopping' ? .65 : a.play === 'dancing' ? 3.6 : 1.2 + Math.random(); a.nextPlay = 7 + Math.random() * 10; }
-      if (a.play === 'dancing') { /* A short, stationary dance between walks. */ }
-      else if (a.wait > 0) a.wait -= delta;
-      else { const dx = (a.goal.x - a.x) * w, dy = (a.goal.y - a.y) * h, d = Math.hypot(dx, dy); if (d < 4) { a.goal = destination(); a.wait = .5 + Math.random() * UI.walking.pauseAtDestination; } else { const step = Math.min(d, a.speed * delta * (a.play === 'running' ? UI.walking.runMultiplier : 1)); a.x += dx / d * step / w; a.y += dy / d * step / h; } }
-    }
+  const crowd = [...walkers.values()]; for (const a of crowd) a.focused = document.activeElement === a.node;
+  stepWorld(crowd, delta, w, h, { active: moving, walking: UI.walking });
+  const first = crowd[0]?.node; const anchorX = (first?.offsetWidth || 70) / 2, anchorY = first?.offsetHeight || 94;
+  for (const a of crowd) {
+    const active = moving && !a.hover && !a.focused;
     a.node.classList.toggle('is-hopping', active && a.play === 'hopping'); a.node.classList.toggle('is-running', active && a.play === 'running' && a.wait <= 0);
     a.node.classList.toggle('is-dancing', active && a.play === 'dancing');
+    a.node.classList.toggle('is-greeting', active && a.play === 'greeting'); a.node.style.setProperty('--facing', a.facing || 1);
     a.node.style.transform = `translate(${(a.x * w - anchorX).toFixed(1)}px,${(a.y * h - anchorY).toFixed(1)}px)`; a.node.style.zIndex = String(Math.round(a.y * 100));
   }
   requestAnimationFrame(walk);
@@ -140,34 +138,35 @@ $('undo-drawing').addEventListener('click', () => { state.strokes.pop(); redraw(
 PENS.forEach((color, i) => { const b = el('button', `pen-color${!i ? ' selected' : ''}`); b.type = 'button'; b.style.setProperty('--pen-color', color); b.setAttribute('aria-label', ['남색 펜', '주황 펜', '하늘색 펜', '초록 펜', '분홍 펜'][i]); b.setAttribute('aria-pressed', String(!i)); b.addEventListener('click', () => { state.pen = color; for (const n of $('pen-colors').children) { n.classList.toggle('selected', n === b); n.setAttribute('aria-pressed', String(n === b)); } }); $('pen-colors').append(b); });
 for (const [id, width] of [['thin-pen', .012], ['thick-pen', .03]]) $(id).addEventListener('click', () => { state.width = width; for (const other of ['thin-pen', 'thick-pen']) { $(other).classList.toggle('selected', other === id); $(other).setAttribute('aria-pressed', String(other === id)); } });
 
-function section(parent, heading, value, extra) { const block = el('section', 'card-section'); const title = el('h3', '', heading); block.append(title); if (extra) block.append(extra); if (value) block.append(el('p', '', value)); parent.append(block); }
-function openProfile(card) {
-  stopReactions(); state.current = card; const current = mate(card.mateId), aspiration = mate(card.aspirationMateId), node = $('profile-card'); node.replaceChildren(); node.style.setProperty('--profile-color', current?.color || '#c7dbcc');
-  const top = el('div', 'result-top'), heading = el('div', 'result-heading'); heading.append(el('h2', '', card.name)); if (card.jobInterest) heading.append(el('p', 'result-job', card.jobInterest)); top.append(portrait(card), heading); node.append(top);
-  section(node, '요즘 나의 가장 큰 도파민은?', card.dopamine);
-  section(node, `나를 보여주는 메이트 · ${current?.name || ''}`, card.experience, el('div', 'mate-value', `#${current?.value || ''}`));
-  const aspirationLine = el('div', 'aspiration-line'); aspirationLine.append(portrait({ mateId: card.aspirationMateId }, true), el('strong', '', `${aspiration?.name || ''} · #${aspiration?.value || ''}`)); section(node, '앞으로 닮아가고 싶은 메이트', card.attempts, aspirationLine);
-  section(node, '진로에 대한 고민이나 궁금증', card.concern);
-  $('profile-kind').textContent = card.isDemo ? '예시 카드' : own(card) ? card.localOnly ? '기기 임시 저장' : '내 카드' : '';
-  $('edit-profile').hidden = !own(card); $('save-image').hidden = !own(card); $('profile-dialog').classList.remove('presenting'); $('reaction-stage').replaceChildren(); showDialog($('profile-dialog')); $('profile-dialog').scrollTop = 0; startReactions(card);
+function profileBlock(parent, type, label, value, selected) {
+  const block = el('section', `story-block ${type}`), top = el('div', 'story-top'); top.append(el('h3', 'story-label', label));
+  if (selected) { const tags = el('div', 'story-mates'), tag = el('span', 'mate-tag'), mini = el('span', 'mate-mini'); mini.append(portrait({ mateId: selected.id }, true)); tag.append(mini, el('span', '', `${selected.name} · #${selected.value}`)); tags.append(tag); top.append(tags); }
+  block.append(top, el('p', 'story-text', value || '')); parent.append(block);
 }
-function closeProfile() { if ($('profile-dialog').open) $('profile-dialog').close(); $('profile-dialog').classList.remove('presenting'); stopReactions(); }
-function splitLines(c, text, width) { const lines = []; let line = ''; for (const char of Array.from(text || '')) { if (char === '\n') { lines.push(line); line = ''; } else if (c.measureText(line + char).width > width && line) { lines.push(line); line = char; } else line += char; } if (line) lines.push(line); return lines; }
+let profileFitFrame = 0;
+function scheduleProfileFit() { cancelAnimationFrame(profileFitFrame); profileFitFrame = requestAnimationFrame(fitProfile); }
+function fitProfile() {
+  const dialog = $('profile-dialog'), node = $('profile-card'), viewport = $('profile-viewport'); if (!dialog.open) return;
+  const variants = dialog.classList.contains('presenting') ? [[20,16,24,96],[19,14,20,92],[18,12,18,88],[17,10,16,80],[16,8,12,72]] : [[18,13,20,88]];
+  let fits = false;
+  for (const [font, gap, pad, size] of variants) {
+    node.style.setProperty('--card-font-size', `${font}px`); node.style.setProperty('--card-gap', `${gap}px`); node.style.setProperty('--card-pad', `${pad}px`); node.style.setProperty('--portrait-size', `${size}px`);
+    if (node.getBoundingClientRect().height <= viewport.clientHeight + 1) { fits = true; break; }
+  }
+  node.dataset.fit = fits ? 'screen' : 'scroll'; positionReactions();
+}
+function setPresentation(enabled) { $('profile-dialog').classList.toggle('presenting', enabled); $('present-card').textContent = enabled ? '기본 보기' : '크게 보기'; $('present-card').setAttribute('aria-pressed', String(enabled)); $('profile-viewport').scrollTop = 0; scheduleProfileFit(); }
+function openProfile(card) {
+  stopReactions(); state.current = card; const current = mate(card.mateId), aspiration = mate(card.aspirationMateId), node = $('profile-card'); node.replaceChildren();
+  const top = el('header', 'card-identity'), heading = el('div', 'identity-copy'); heading.append(el('h2', '', card.name)); const job = el('p', 'identity-job', card.jobInterest || ''); job.setAttribute('aria-label', `관심 직무 ${card.jobInterest || ''}`); heading.append(job); top.append(portrait(card), heading); node.append(top);
+  const body = el('div', 'card-body'); profileBlock(body, 'dopamine', '요즘 나의 도파민', card.dopamine); profileBlock(body, 'current', '나를 보여주는 경험', card.experience, current); profileBlock(body, 'aspiration', '앞으로 닮고 싶은 모습', card.attempts, aspiration); profileBlock(body, 'concern', '진로 고민 · 궁금한 점', card.concern); node.append(body);
+  $('profile-kind').textContent = card.isDemo ? '예시 카드' : own(card) ? card.localOnly ? '기기 임시 저장' : '내 카드' : '';
+  $('edit-profile').hidden = !own(card); $('save-image').hidden = !own(card); setPresentation(false); $('reaction-stage').replaceChildren(); showDialog($('profile-dialog')); $('profile-viewport').scrollTop = 0; scheduleProfileFit(); document.fonts.ready.then(scheduleProfileFit); startReactions(card);
+}
+function closeProfile() { if ($('profile-dialog').open) $('profile-dialog').close(); setPresentation(false); stopReactions(); }
 async function saveImage() {
-  const card = state.current; if (!card || !own(card)) return; const current = mate(card.mateId), aspiration = mate(card.aspirationMateId);
-  await document.fonts.ready;
-  const groups = [['요즘 나의 가장 큰 도파민은?', card.dopamine], [`나를 보여주는 메이트 · ${current.name} / #${current.value}`, card.experience], [`앞으로 닮아가고 싶은 메이트 · ${aspiration.name} / #${aspiration.value}`, card.attempts], ['진로에 대한 고민이나 궁금증', card.concern]];
-  const out = document.createElement('canvas'); out.width = 1000; let c = out.getContext('2d');
-  c.font = '800 62px HCDisplay, sans-serif'; const names = splitLines(c, card.name, 570); c.font = '32px sans-serif'; const jobs = splitLines(c, card.jobInterest || '', 570);
-  const headerHeight = Math.max(245, 60 + names.length * 75 + jobs.length * 46);
-  c.font = '44px sans-serif'; const layout = groups.map(([label, text]) => ({ label, lines: splitLines(c, text, 840) })); out.height = headerHeight + 155 + layout.reduce((n, s) => n + 130 + Math.max(1, s.lines.length) * 67, 0);
-  c = out.getContext('2d'); c.fillStyle = '#fffdf6'; c.fillRect(0, 0, out.width, out.height); c.strokeStyle = '#d8ae7e'; c.lineWidth = 2; c.strokeRect(36, 36, 928, out.height - 72);
-  c.fillStyle = '#ffe8c5'; c.fillRect(60, 60, 880, headerHeight);
-  if (card.strokes?.length) drawStrokes(c, card.strokes, 210, 75, 75);
-  else { const asset = MATE_ASSETS[current.id], source = new Image(); source.src = new URL(asset.file, import.meta.url).href; try { await source.decode(); const [x, y, w, h] = asset.viewBox, scale = Math.min(210 / w, 210 / h); c.drawImage(source, x, y, w, h, 75 + (210 - w * scale) / 2, 75 + (210 - h * scale) / 2, w * scale, h * scale); } catch { return toast('캐릭터를 불러오지 못했습니다.'); } }
-  c.fillStyle = '#76502f'; c.font = '800 62px HCDisplay, sans-serif'; names.forEach((line, i) => c.fillText(line, 325, 140 + i * 75)); c.font = '32px sans-serif'; jobs.forEach((line, i) => c.fillText(line, 325, 140 + names.length * 75 + i * 46));
-  let y = headerHeight + 105;
-  for (const item of layout) { c.fillStyle = '#ffe8c5'; c.fillRect(60, y, 880, 61); c.fillStyle = '#87542c'; c.font = '800 29px HCDisplay, sans-serif'; c.fillText(item.label, 78, y + 42); y += 115; c.fillStyle = '#694c35'; c.font = '44px sans-serif'; for (const line of item.lines) { c.fillText(line, 80, y); y += 67; } if (!item.lines.length) y += 67; y += 15; }
+  const card = state.current; if (!card || !own(card)) return; let out;
+  try { out = await createProfileImage(card, { mates: MATES, assets: MATE_ASSETS, drawStrokes }); } catch { return toast('카드 이미지를 만들지 못했습니다. 다시 시도해 주세요.'); }
   const blob = await new Promise(resolve => out.toBlob(resolve, 'image/png')); if (!blob) return toast('이미지를 만들지 못했습니다.'); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `HC_${card.name.replace(/[^\p{L}\p{N}_ -]/gu, '')}_자기소개카드.png`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 60000); toast('이미지를 저장했습니다.');
 }
 
@@ -176,7 +175,7 @@ function stopReactions() { clearInterval(reactionTimer); reactionTimer = null; r
 function floatReaction(event) {
   if (!state.current || !REACTIONS[event.type]) return; positionReactions(); const bubble = el('div', 'reaction-float'); bubble.style.left = `${10 + Math.random() * 65}%`; bubble.append(portrait(event.actor), el('span', 'reaction-icon', REACTIONS[event.type]), el('span', 'reaction-name', event.actor.name)); $('reaction-stage').append(bubble); setTimeout(() => bubble.remove(), 4200);
 }
-function positionReactions() { $('reaction-stage').style.top = `${$('profile-dialog').scrollTop}px`; $('reaction-stage').style.height = `${$('profile-dialog').clientHeight}px`; }
+function positionReactions() { const viewport = $('profile-viewport'); $('reaction-stage').style.top = `${viewport.offsetTop}px`; $('reaction-stage').style.height = `${viewport.clientHeight}px`; }
 async function pollReactions(generation = reactionGeneration) {
   if (!state.current || state.current.isDemo || state.current.localOnly || !document.querySelector('#profile-dialog[open]') || document.hidden) return;
   const id = state.current.id;
@@ -196,13 +195,13 @@ $('profile-form').addEventListener('input', updateForm); $('profile-form').addEv
 $('choose-mate').addEventListener('click', () => openPicker('mateId')); $('choose-aspiration').addEventListener('click', () => openPicker('aspirationMateId')); $('mate-close').addEventListener('click', () => $('mate-dialog').close());
 $('character-preview').addEventListener('click', openDrawing); for (const id of ['character-close', 'character-done']) $(id).addEventListener('click', () => { updateForm(); $('character-dialog').close(); });
 document.querySelector('.close-editor').addEventListener('click', () => $('editor').close()); $('close-profile').addEventListener('click', closeProfile); $('profile-dialog').addEventListener('close', stopReactions);
-$('dock-button').addEventListener('click', () => state.mine ? openProfile(state.mine) : openEditor()); $('edit-profile').addEventListener('click', openEditor); $('save-image').addEventListener('click', saveImage); $('present-card').addEventListener('click', () => { $('profile-dialog').classList.add('presenting'); $('profile-dialog').scrollTop = 0; });
-$('profile-dialog').addEventListener('scroll', positionReactions, { passive: true });
+$('dock-button').addEventListener('click', () => state.mine ? openProfile(state.mine) : openEditor()); $('edit-profile').addEventListener('click', openEditor); $('save-image').addEventListener('click', saveImage); $('present-card').addEventListener('click', () => setPresentation(!$('profile-dialog').classList.contains('presenting')));
+$('profile-viewport').addEventListener('scroll', positionReactions, { passive: true }); new ResizeObserver(scheduleProfileFit).observe($('profile-viewport')); window.addEventListener('resize', scheduleProfileFit); window.visualViewport?.addEventListener('resize', scheduleProfileFit); document.fonts.addEventListener('loadingdone', scheduleProfileFit);
 for (const view of ['world', 'grid']) $(`${view}-view`).addEventListener('click', () => { state.view = view; renderGallery(); }); $('motion-toggle').addEventListener('click', () => { state.paused = !state.paused; renderGallery(); });
 $('qr-open').addEventListener('click', () => showDialog($('qr-dialog'))); $('qr-close').addEventListener('click', () => $('qr-dialog').close());
 for (const button of document.querySelectorAll('[data-reaction]')) button.addEventListener('click', () => sendReaction(button.dataset.reaction));
 for (const dialog of document.querySelectorAll('dialog')) dialog.addEventListener('click', event => { if (event.target !== dialog) return; const r = dialog.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) dialog.close(); });
-state.mine = stored(OWN); renderGallery(); refresh(); requestAnimationFrame(walk); requestAnimationFrame(() => { $('world').scrollLeft = ($('island-stage').clientWidth - $('world').clientWidth) / 2; });
+state.mine = stored(OWN); renderGallery(); refresh(); requestAnimationFrame(walk); requestAnimationFrame(() => { const world = $('world'), stage = $('island-stage'); world.scrollLeft = (stage.clientWidth - world.clientWidth) / 2; world.scrollTop = Math.max(0, stage.clientHeight * .64 - world.clientHeight * .58); });
 setInterval(() => { if (!document.hidden && !document.querySelector('#editor[open]')) refresh(); }, UI.sharedCardRefreshMs);
 window.addEventListener('focus', refresh);
 
